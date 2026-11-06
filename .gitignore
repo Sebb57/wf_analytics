@@ -1,3 +1,6 @@
+# Binaries
+warframe_analytics
+
 # Prerequisites
 *.d
 
@@ -56,6 +59,7 @@ compile_commands.json
 *.log
 *.bak
 *.swp
+*.json
 
 # vcpkg
 vcpkg_installed/
