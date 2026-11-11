@@ -62,6 +62,12 @@ inline constexpr std::string_view RIVEN_ATTRIBUTES = "riven/attributes";
 inline constexpr std::string_view OLD_ITEM = "items/";              // items/<slug>
 inline constexpr std::string_view OLD_STATISTICS = "/statistics";   // items/<slug>/statistics
 
+// analysis
+inline constexpr std::string_view PERIOD = "90days";
+inline constexpr std::size_t PERIOD_DAYS = 90;
+inline constexpr double VOLUME_TRIM = 0.1;
+inline constexpr double MAX_SCORE = 100.0;
+
 }
 
 #endif /* CONSTANTS_HPP_ */
