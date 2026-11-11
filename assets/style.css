@@ -1,0 +1,159 @@
+:root {
+    color-scheme: light dark;
+    --text: #1c1c1c;
+    --muted: #6b6b6b;
+    --background: #fdfdfc;
+    --line: #dddcd8;
+    --good: #1a7f37;
+    --fair: #9a6700;
+    --poor: #b3261e;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text: #e6e6e3;
+        --muted: #9a9a96;
+        --background: #161616;
+        --line: #333331;
+        --good: #57ab5a;
+        --fair: #c69026;
+        --poor: #e5534b;
+    }
+}
+
+body {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+    font: 1rem/1.5 system-ui, sans-serif;
+    color: var(--text);
+    background: var(--background);
+}
+
+header {
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 1.5rem;
+}
+
+h1 {
+    margin: 0;
+    font-size: 1.6rem;
+}
+
+h2 {
+    margin: 2.5rem 0 0.75rem;
+    font-size: 1.15rem;
+}
+
+header p,
+footer,
+#count,
+.variant,
+th {
+    color: var(--muted);
+}
+
+header p {
+    margin: 0.25rem 0 1rem;
+}
+
+a {
+    color: inherit;
+}
+
+input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.5rem 0.6rem;
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+}
+
+#count {
+    margin: 0.5rem 0;
+    font-size: 0.85rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: middle;
+}
+
+th {
+    font-size: 0.8rem;
+    font-weight: normal;
+}
+
+img {
+    display: block;
+    width: 2.5rem;
+    height: 2.5rem;
+    object-fit: contain;
+}
+
+.variant {
+    display: block;
+    font-size: 0.85rem;
+}
+
+.number {
+    width: 4.5rem;
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.rank {
+    width: 2rem;
+}
+
+.thumb {
+    width: 2.5rem;
+}
+
+td.score {
+    font-weight: bold;
+}
+
+.good {
+    color: var(--good);
+}
+
+.fair {
+    color: var(--fair);
+}
+
+.poor {
+    color: var(--poor);
+}
+
+footer {
+    margin-top: 3rem;
+    font-size: 0.85rem;
+}
+
+@media (max-width: 32rem) {
+    th,
+    td {
+        padding: 0.4rem 0.3rem;
+    }
+
+    .number {
+        width: auto;
+    }
+
+    .rank {
+        display: none;
+    }
+}

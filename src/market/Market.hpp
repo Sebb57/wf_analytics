@@ -11,6 +11,8 @@
 #include "constants.hpp"
 #include "curl/ACurl.hpp"
 #include "json/Json.hpp"
+#include "utils/RateLimiter.hpp"
+#include <format>
 #include <string>
 #include <string_view>
 
@@ -18,8 +20,11 @@ namespace wf::market {
 
 class Market : public curl::ACurl {
     private:
+        utils::RateLimiter _limiter{constants::REQUESTS_PER_SECOND};
+
         [[nodiscard]] json::Json _fetch(std::string_view url)
         {
+            this->_limiter.wait();
             this->curl(url);
 
             const long status = this->getStatusCode();
@@ -40,6 +45,10 @@ class Market : public curl::ACurl {
         [[nodiscard]] json::Json getItems()
         {
             return this->_fetch(constants::concat<constants::PRODUCTION_URL, constants::ITEMS>).at("data");
+        }
+        [[nodiscard]] json::Json getStatistics(std::string_view slug)
+        {
+            return this->_fetch(std::format("{}{}{}{}", constants::OLD_URL, constants::OLD_ITEM, this->escape(slug), constants::OLD_STATISTICS)).at("payload");
         }
 
         // exceptions
