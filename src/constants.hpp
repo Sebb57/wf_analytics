@@ -36,6 +36,7 @@ inline constexpr int FAILURE = 1;
 // client
 inline constexpr std::string_view USER_AGENT = "MyWarframeApp/1.0 (C++ client)";
 inline constexpr std::string_view DEFAULT_LANGUAGE = "en";
+inline constexpr double REQUESTS_PER_SECOND = 2.0;
 
 // versions
 inline constexpr std::string_view PRODUCTION = "v2/";
