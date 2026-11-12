@@ -23,7 +23,7 @@ class Scorer {
     private:
         static constexpr std::array<double Offer::*, 2> CRITERIA{&Offer::price, &Offer::volume};
 
-        [[nodiscard]] static std::vector<double> _sorted(const std::vector<Offer>& offers, double Offer::* criterion)
+        [[nodiscard]] std::vector<double> _sorted(const std::vector<Offer>& offers, double Offer::* criterion) const
         {
             std::vector<double> values;
 
@@ -35,18 +35,18 @@ class Scorer {
 
     public:
         // score = geometric mean of the percentile rank of each criterion
-        static void rank(std::vector<Offer>& offers)
+        void rank(std::vector<Offer>& offers) const
         {
             for (Offer& offer : offers)
                 offer.score = 1.0;
-            for (const auto criterion : CRITERIA) {
-                const std::vector<double> sorted = _sorted(offers, criterion);
+            for (const auto criterion : this->CRITERIA) {
+                const std::vector<double> sorted = this->_sorted(offers, criterion);
 
                 for (Offer& offer : offers)
                     offer.score *= utils::percentileRank(sorted, offer.*criterion);
             }
             for (Offer& offer : offers)
-                offer.score = constants::MAX_SCORE * std::pow(offer.score, 1.0 / CRITERIA.size());
+                offer.score = constants::MAX_SCORE * std::pow(offer.score, 1.0 / this->CRITERIA.size());
             std::ranges::sort(offers, std::greater{}, &Offer::score);
         }
 };

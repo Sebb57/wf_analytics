@@ -26,11 +26,13 @@ namespace wf::analytics {
 class Scraper {
     private:
         market::Market _market;
+        Analyzer _analyzer;
+        Scorer _scorer;
         std::vector<Offer> _offers;
 
         void _scrape(const Item& item)
         {
-            const std::vector<Offer> offers = Analyzer::analyze(item, this->_market.getStatistics(item.slug));
+            const std::vector<Offer> offers = this->_analyzer.analyze(item, this->_market.getStatistics(item.slug));
 
             this->_offers.insert(this->_offers.end(), offers.begin(), offers.end());
         }
@@ -51,7 +53,7 @@ class Scraper {
                 }
             }
             std::cerr << std::endl;
-            Scorer::rank(this->_offers);
+            this->_scorer.rank(this->_offers);
         }
         [[nodiscard]] json::Json toJson() const
         {

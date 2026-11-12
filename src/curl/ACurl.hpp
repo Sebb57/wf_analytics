@@ -71,7 +71,7 @@ class ACurl {
             }
             return totalSize;
         }
-        static const char* _methodName(Method method)
+        const char* _methodName(Method method) const
         {
             switch (method) {
                 case Method::Get: return "GET";
@@ -130,7 +130,7 @@ class ACurl {
         }
 
     protected:
-        ACurl() : _curl(_initHandle(), curl_easy_cleanup) { this->_initOpts(); }
+        ACurl() : _curl(this->_initHandle(), curl_easy_cleanup) { this->_initOpts(); }
 
         template <typename T>
         void setOpt(CURLoption opt, T param)

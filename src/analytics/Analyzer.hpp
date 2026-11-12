@@ -38,23 +38,23 @@ class Analyzer {
             {"amber_stars", "amber "},
         }};
 
-        [[nodiscard]] static std::string _variant(const json::Json& day)
+        [[nodiscard]] std::string _variant(const json::Json& day) const
         {
             std::string variant;
 
-            for (const auto& [field, label] : VARIANTS) {
+            for (const auto& [field, label] : this->VARIANTS) {
                 if (!day.contains(field))
                     continue;
                 variant += (variant.empty() ? "" : ", ") + std::string(label) + day.at(field).text();
             }
             return variant;
         }
-        [[nodiscard]] static std::map<std::string, Days> _group(const json::Json& statistics)
+        [[nodiscard]] std::map<std::string, Days> _group(const json::Json& statistics) const
         {
             std::map<std::string, Days> variants;
 
             for (const json::Json& day : statistics.at("statistics_closed").at(constants::PERIOD).elements()) {
-                Days& days = variants[_variant(day)];
+                Days& days = variants[this->_variant(day)];
 
                 days.prices.push_back(day.at("median").get<double>());
                 days.volumes.push_back(day.at("volume").get<double>());
@@ -63,9 +63,9 @@ class Analyzer {
         }
 
     public:
-        [[nodiscard]] static std::vector<Offer> analyze(const Item& item, const json::Json& statistics)
+        [[nodiscard]] std::vector<Offer> analyze(const Item& item, const json::Json& statistics) const
         {
-            std::map<std::string, Days> variants = _group(statistics);
+            std::map<std::string, Days> variants = this->_group(statistics);
             std::vector<Offer> offers;
 
             if (variants.empty())
