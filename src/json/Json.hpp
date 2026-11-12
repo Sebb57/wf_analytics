@@ -38,17 +38,17 @@ class Json {
         Json() = default;
 
         template <typename T>
-        [[nodiscard]] T get() const { return _guard([&] { return this->_data.template get<T>(); }); }
+        [[nodiscard]] T get() const { return this->_guard([&] { return this->_data.template get<T>(); }); }
         [[nodiscard]] static Json array() { return Json(nlohmann::json::array()); }
         [[nodiscard]] static Json parse(std::string_view text) { return _guard([&] { return Json(nlohmann::json::parse(text)); }); }
-        [[nodiscard]] Json at(std::string_view key) const { return _guard([&] { return Json(this->_data.at(std::string(key))); }); }
-        [[nodiscard]] Json at(std::size_t index) const { return _guard([&] { return Json(this->_data.at(index)); }); }
+        [[nodiscard]] Json at(std::string_view key) const { return this->_guard([&] { return Json(this->_data.at(std::string(key))); }); }
+        [[nodiscard]] Json at(std::size_t index) const { return this->_guard([&] { return Json(this->_data.at(index)); }); }
         [[nodiscard]] bool contains(std::string_view key) const { return this->_data.contains(std::string(key)); }
         [[nodiscard]] bool isNull() const { return this->_data.is_null(); }
         [[nodiscard]] bool isObject() const { return this->_data.is_object(); }
         [[nodiscard]] bool isArray() const { return this->_data.is_array(); }
         [[nodiscard]] std::size_t size() const { return this->_data.size(); }
-        [[nodiscard]] std::string dump(int indent = -1) const { return _guard([&] { return this->_data.dump(indent); }); }
+        [[nodiscard]] std::string dump(int indent = -1) const { return this->_guard([&] { return this->_data.dump(indent); }); }
         [[nodiscard]] std::string text() const { return this->_data.is_string() ? this->_data.get<std::string>() : this->dump(); }
         [[nodiscard]] std::vector<Json> elements() const
         {
@@ -62,13 +62,13 @@ class Json {
         template <typename T>
         Json& set(std::string_view key, const T& value)
         {
-            _guard([&] { this->_data[std::string(key)] = value; });
+            this->_guard([&] { this->_data[std::string(key)] = value; });
             return *this;
         }
         Json& set(std::string_view key, const Json& value) { return this->set(key, value._data); }
         Json& push(const Json& value)
         {
-            _guard([&] { this->_data.push_back(value._data); });
+            this->_guard([&] { this->_data.push_back(value._data); });
             return *this;
         }
 

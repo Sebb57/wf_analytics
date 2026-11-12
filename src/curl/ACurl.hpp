@@ -86,7 +86,7 @@ class ACurl {
         }
         void _initOpts()
         {
-            this->setOpt(CURLOPT_WRITEFUNCTION, _writeCallback);
+            this->setOpt(CURLOPT_WRITEFUNCTION, this->_writeCallback);
             this->setOpt(CURLOPT_WRITEDATA, &this->_response);
             this->setOpt(CURLOPT_FOLLOWLOCATION, 1L);
             this->setOpt(CURLOPT_CONNECTTIMEOUT, 10L);
@@ -109,7 +109,7 @@ class ACurl {
                 this->setOpt(CURLOPT_COPYPOSTFIELDS, std::string(body));
             }
             if (method != Method::Post)
-                this->setOpt(CURLOPT_CUSTOMREQUEST, _methodName(method));
+                this->setOpt(CURLOPT_CUSTOMREQUEST, this->_methodName(method));
         }
         void _applyHeaders()
         {
