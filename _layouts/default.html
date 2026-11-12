@@ -1,23 +1,30 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{ site.title }}</title>
-    <meta name="description" content="{{ site.description }}">
-    <link rel="stylesheet" href="assets/style.css">
-</head>
-<body>
+    <meta name="description" content="{{ site.description }}" />
+    <link rel="stylesheet" href="assets/style.css" />
+  </head>
+  <body>
     <header>
-        <h1>{{ site.title }}</h1>
-        <p>{{ site.description }}</p>
+      <h1>{{ site.title }}</h1>
+      <p>{{ site.description }}</p>
     </header>
-    <main data-analytics="{{ site.analytics_file }}" data-market="{{ site.market_url }}" data-assets="{{ site.assets_url }}">
-        {{ content }}
+    <main
+      data-analytics="{{ site.analytics_file }}"
+      data-market="{{ site.market_url }}"
+      data-assets="{{ site.assets_url }}"
+    >
+      {{ content }}
     </main>
     <footer>
-        <p>Data from <a href="https://warframe.market">warframe.market</a>. <span id="updated"></span></p>
+      <p>
+        Data from <a href="https://warframe.market">warframe.market</a>.
+        <span id="updated"></span>
+      </p>
     </footer>
     <script src="assets/app.js"></script>
-</body>
+  </body>
 </html>
