@@ -15,6 +15,7 @@
 #include "utils/Math.hpp"
 #include <algorithm>
 #include <array>
+#include <functional>
 #include <map>
 #include <string>
 #include <string_view>
@@ -26,6 +27,7 @@ namespace wf::analytics {
 class Analyzer {
     private:
         struct Days {
+            int rank = 0;
             std::vector<double> prices;
             std::vector<double> volumes;
         };
@@ -38,6 +40,21 @@ class Analyzer {
             {"amber_stars", "amber "},
         }};
 
+        // item tag -> rank 0 copies needed to reach a rank
+        static inline const std::map<std::string_view, std::function<double(int)>> COSTS{
+            {"arcane_enhancement", [](int rank) { return (rank + 1) * (rank + 2) / 2.0; }},
+        };
+
+        [[nodiscard]] double _copies(const Item& item, int rank) const
+        {
+            for (const std::string& tag : item.tags) {
+                const auto cost = this->COSTS.find(tag);
+
+                if (cost != this->COSTS.end())
+                    return cost->second(rank);
+            }
+            return 1.0;
+        }
         [[nodiscard]] std::string _variant(const json::Json& day) const
         {
             std::string variant;
@@ -56,6 +73,7 @@ class Analyzer {
             for (const json::Json& day : statistics.at("statistics_closed").at(constants::PERIOD).elements()) {
                 Days& days = variants[this->_variant(day)];
 
+                days.rank = day.contains("mod_rank") ? day.at("mod_rank").get<int>() : 0;
                 days.prices.push_back(day.at("median").get<double>());
                 days.volumes.push_back(day.at("volume").get<double>());
             }
@@ -71,8 +89,18 @@ class Analyzer {
             if (variants.empty())
                 variants[""];
             for (auto& [variant, days] : variants) {
+                const double price = utils::median(days.prices);
+                const double copies = this->_copies(item, days.rank);
+
                 days.volumes.resize(std::max(days.volumes.size(), constants::PERIOD_DAYS));
-                offers.push_back({item, variant, utils::median(days.prices), utils::trimmedMean(days.volumes, constants::VOLUME_TRIM)});
+                offers.push_back({
+                    .item = item,
+                    .variant = variant,
+                    .price = price,
+                    .volume = utils::trimmedMean(days.volumes, constants::VOLUME_TRIM),
+                    .copies = copies,
+                    .unitPrice = price / copies,
+                });
             }
             return offers;
         }

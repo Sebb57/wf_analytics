@@ -22,6 +22,8 @@ struct Offer {
     std::string variant;
     double price = 0.0;
     double volume = 0.0;
+    double copies = 1.0;        // rank 0 copies used to make one
+    double unitPrice = 0.0;     // price of one of those copies
     double score = 0.0;
 
     [[nodiscard]] json::Json toJson() const
@@ -33,6 +35,7 @@ struct Offer {
             .set("variant", this->variant)
             .set("price", utils::roundTo(this->price, 1))
             .set("volume", utils::roundTo(this->volume, 1))
+            .set("copies", std::lround(this->copies))
             .set("score", std::lround(this->score));
     }
 };
