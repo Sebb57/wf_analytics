@@ -19,19 +19,25 @@ cmake --build build
 ./warframe_analytics > analytics.json
 ```
 
-It sends one request per item, 3 per second at most, so a full run takes about
-25 minutes. Progress and errors go to stderr.
+It sends one request per item, 2 per second at most, so a full run takes about
+35 minutes. Progress and errors go to stderr.
 
 ## Score
 
 | Value | How it is computed |
 | --- | --- |
 | price | median of the daily median sale prices |
+| copies | rank 0 copies used to make the offer: `(r + 1)(r + 2) / 2` for an arcane of rank `r`, 1 otherwise |
+| price per copy | price / copies |
 | volume | sales per day, once the 10% best and 10% worst days are dropped |
-| score | 100 x geometric mean of the percentile ranks of price and volume |
+| score | 100 x geometric mean of the percentile ranks of price per copy and volume |
 
 A few absurd trades cannot move a median, and an offer that sold on less than
 10 days out of 90 ends with a volume of 0, so a score of 0.
+
+A rank 5 arcane takes 21 rank 0 copies. Scoring on the price per copy shows when
+selling those 21 copies one by one pays more than ranking it up. The cost rules
+live in the `COSTS` table of `src/analytics/Analyzer.hpp`, by item tag.
 
 ## Page
 
