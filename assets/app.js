@@ -25,7 +25,14 @@ const COLUMNS = [
       element("span", { className: "variant", textContent: offer.variant }),
     ],
   },
-  { title: "Price", className: "number", cell: (offer) => `${offer.price} p` },
+  {
+    title: "Price",
+    className: "number",
+    cell: (offer) => [
+      `${offer.price} p`,
+      element("span", { className: "variant", textContent: perCopy(offer) }),
+    ],
+  },
   { title: "Sold / day", className: "number", cell: (offer) => offer.volume },
   {
     title: "Score",
@@ -43,6 +50,11 @@ function element(tag, properties = {}, children = []) {
 
   node.append(...children);
   return node;
+}
+
+// price of one rank 0 copy, for offers that need several (arcanes)
+function perCopy({ price, copies = 1 }) {
+  return copies > 1 ? `${(price / copies).toFixed(1)} p × ${copies}` : "";
 }
 
 function grade(score) {
