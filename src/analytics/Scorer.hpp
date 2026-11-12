@@ -21,7 +21,7 @@ namespace wf::analytics {
 
 class Scorer {
     private:
-        static constexpr std::array<double Offer::*, 2> CRITERIA{&Offer::price, &Offer::volume};
+        static constexpr std::array<double Offer::*, 2> CRITERIA{&Offer::unitPrice, &Offer::volume};
 
         [[nodiscard]] std::vector<double> _sorted(const std::vector<Offer>& offers, double Offer::* criterion) const
         {
