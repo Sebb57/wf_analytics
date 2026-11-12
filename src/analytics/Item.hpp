@@ -11,6 +11,7 @@
 #include "constants.hpp"
 #include "json/Json.hpp"
 #include <string>
+#include <vector>
 
 namespace wf::analytics {
 
@@ -18,6 +19,7 @@ struct Item {
     std::string slug;
     std::string name;
     std::string thumb;
+    std::vector<std::string> tags;
 
     [[nodiscard]] static Item fromJson(const json::Json& item)
     {
@@ -27,6 +29,7 @@ struct Item {
             item.at("slug").get<std::string>(),
             texts.at("name").get<std::string>(),
             texts.at("thumb").get<std::string>(),
+            item.at("tags").get<std::vector<std::string>>(),
         };
     }
 };
