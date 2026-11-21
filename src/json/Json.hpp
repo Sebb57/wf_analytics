@@ -44,6 +44,9 @@ class Json {
         [[nodiscard]] Json at(std::string_view key) const { return this->_guard([&] { return Json(this->_data.at(std::string(key))); }); }
         [[nodiscard]] Json at(std::size_t index) const { return this->_guard([&] { return Json(this->_data.at(index)); }); }
         [[nodiscard]] bool contains(std::string_view key) const { return this->_data.contains(std::string(key)); }
+        // value at key, or fallback when the key is missing
+        template <typename T>
+        [[nodiscard]] T value(std::string_view key, const T& fallback) const { return this->contains(key) ? this->at(key).template get<T>() : fallback; }
         [[nodiscard]] bool isNull() const { return this->_data.is_null(); }
         [[nodiscard]] bool isObject() const { return this->_data.is_object(); }
         [[nodiscard]] bool isArray() const { return this->_data.is_array(); }

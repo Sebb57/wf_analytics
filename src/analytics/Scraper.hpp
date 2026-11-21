@@ -42,7 +42,7 @@ class Scraper {
                 return {{item.name}};
             for (const json::Json& part : this->_market.getSet(item.slug).elements()) {
                 if (!part.at("setRoot").get<bool>())
-                    parts.push_back({Item::fromJson(part).name, part.at("quantityInSet").get<double>()});
+                    parts.push_back({Item::fromJson(part).name, part.value("quantityInSet", 1.0)});
             }
             return parts;
         }

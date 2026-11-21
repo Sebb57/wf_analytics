@@ -98,7 +98,7 @@ class Analyzer {
             for (const json::Json& day : statistics.at("statistics_closed").at(constants::PERIOD).elements()) {
                 Days& days = variants[this->_variant(day)];
 
-                days.rank = day.contains("mod_rank") ? day.at("mod_rank").get<int>() : 0;
+                days.rank = day.value("mod_rank", 0);
                 days.dropped = this->_dropped(day);
                 days.prices.push_back(day.at("median").get<double>());
                 days.volumes.push_back(day.at("volume").get<double>());
