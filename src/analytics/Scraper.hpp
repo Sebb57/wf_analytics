@@ -80,6 +80,7 @@ class Scraper {
                 offers.push(offer.toJson());
             return json::Json()
                 .set("updated", std::format("{:%FT%TZ}", std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now())))
+                .set("rankings", this->_scorer.toJson())
                 .set("offers", offers);
         }
 };

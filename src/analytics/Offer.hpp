@@ -12,6 +12,7 @@
 #include "json/Json.hpp"
 #include "utils/Math.hpp"
 #include <cmath>
+#include <map>
 #include <optional>
 #include <string>
 
@@ -27,10 +28,15 @@ struct Offer {
     double unitPrice = 0.0;     // price of one of those copies
     std::optional<double> farmHours;     // to farm what makes one, nothing if it does not drop
     std::optional<double> platPerHour;   // price earned per hour of farm
-    double score = 0.0;
+    std::map<std::string, double> scores{};     // ranking -> score out of 100
 
     [[nodiscard]] json::Json toJson() const
     {
+        json::Json scores;
+
+        for (const auto& [ranking, score] : this->scores)
+            scores.set(ranking, std::lround(score));
+
         json::Json offer = json::Json()
             .set("slug", this->item.slug)
             .set("name", this->item.name)
@@ -39,7 +45,7 @@ struct Offer {
             .set("price", utils::roundTo(this->price, 1))
             .set("volume", utils::roundTo(this->volume, 1))
             .set("copies", std::lround(this->copies))
-            .set("score", std::lround(this->score));
+            .set("scores", scores);
 
         if (this->farmHours && this->platPerHour)
             offer.set("farm", utils::roundTo(*this->farmHours, 2)).set("perHour", utils::roundTo(*this->platPerHour, 1));

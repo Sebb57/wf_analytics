@@ -10,44 +10,88 @@
 
 #include "analytics/Offer.hpp"
 #include "constants.hpp"
+#include "json/Json.hpp"
 #include "utils/Math.hpp"
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <functional>
+#include <optional>
+#include <string>
+#include <string_view>
 #include <vector>
 
 namespace wf::analytics {
 
+// value of an offer to rank on, nothing when it is unknown
+using Criterion = std::optional<double> (*)(const Offer&);
+
+template <auto Field>
+[[nodiscard]] std::optional<double> criterion(const Offer& offer) { return offer.*Field; }
+
 class Scorer {
     private:
-        static constexpr std::array<double Offer::*, 2> CRITERIA{&Offer::unitPrice, &Offer::volume};
+        struct Ranking {
+            std::string_view id;
+            std::string_view label;
+            std::vector<Criterion> criteria;
+        };
 
-        [[nodiscard]] std::vector<double> _sorted(const std::vector<Offer>& offers, double Offer::* criterion) const
+        // the first one is the default ranking
+        static inline const std::vector<Ranking> RANKINGS{
+            {"farm", "Best to farm (platinum per hour)", {criterion<&Offer::platPerHour>, criterion<&Offer::volume>}},
+            {"market", "Best to sell (farm ignored)", {criterion<&Offer::unitPrice>, criterion<&Offer::volume>}},
+        };
+
+        [[nodiscard]] std::vector<double> _sorted(const std::vector<Offer*>& offers, Criterion criterion) const
         {
             std::vector<double> values;
 
-            for (const Offer& offer : offers)
-                values.push_back(offer.*criterion);
+            for (const Offer* offer : offers)
+                values.push_back(*criterion(*offer));
             std::ranges::sort(values);
             return values;
         }
+        // score = geometric mean of the percentile rank of each criterion,
+        // among the offers where every criterion is known
+        void _rank(std::vector<Offer>& offers, const Ranking& ranking) const
+        {
+            const std::string id(ranking.id);
+            std::vector<Offer*> ranked;
+
+            for (Offer& offer : offers) {
+                if (std::ranges::all_of(ranking.criteria, [&](Criterion criterion) { return criterion(offer).has_value(); }))
+                    ranked.push_back(&offer);
+            }
+            for (Offer* offer : ranked)
+                offer->scores[id] = 1.0;
+            for (const Criterion criterion : ranking.criteria) {
+                const std::vector<double> sorted = this->_sorted(ranked, criterion);
+
+                for (Offer* offer : ranked)
+                    offer->scores[id] *= utils::percentileRank(sorted, *criterion(*offer));
+            }
+            for (Offer* offer : ranked)
+                offer->scores[id] = constants::MAX_SCORE * std::pow(offer->scores[id], 1.0 / ranking.criteria.size());
+        }
 
     public:
-        // score = geometric mean of the percentile rank of each criterion
+        // scores every offer in every ranking, then sorts them on the default one
         void rank(std::vector<Offer>& offers) const
         {
-            for (Offer& offer : offers)
-                offer.score = 1.0;
-            for (const auto criterion : this->CRITERIA) {
-                const std::vector<double> sorted = this->_sorted(offers, criterion);
+            const std::string first(this->RANKINGS.front().id);
 
-                for (Offer& offer : offers)
-                    offer.score *= utils::percentileRank(sorted, offer.*criterion);
-            }
-            for (Offer& offer : offers)
-                offer.score = constants::MAX_SCORE * std::pow(offer.score, 1.0 / this->CRITERIA.size());
-            std::ranges::sort(offers, std::greater{}, &Offer::score);
+            for (const Ranking& ranking : this->RANKINGS)
+                this->_rank(offers, ranking);
+            std::ranges::sort(offers, std::greater{}, [&](const Offer& offer) { return offer.scores.contains(first) ? offer.scores.at(first) : -1.0; });
+        }
+        // the rankings, for the page to offer them
+        [[nodiscard]] json::Json toJson() const
+        {
+            json::Json rankings = json::Json::array();
+
+            for (const Ranking& ranking : this->RANKINGS)
+                rankings.push(json::Json().set("id", std::string(ranking.id)).set("label", std::string(ranking.label)));
+            return rankings;
         }
 };
 
