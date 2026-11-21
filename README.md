@@ -5,8 +5,8 @@ Finds what sells best on [warframe.market](https://warframe.market).
 The scraper goes through every item and each of its variants (mod rank, fish size,
 relic refinement, ayatan stars), reads 90 days of sales, estimates how long it
 takes to farm, and gives every offer a score out of 100 in each ranking. A small
-GitHub page shows the top 10 and lets you pick the ranking, filter on farm time
-and search the rest.
+GitHub page shows the top 10 and lets you count farm time in the score or not,
+hide it, filter on it and search the rest.
 
 ## Build
 
@@ -34,18 +34,20 @@ errors go to stderr.
 | price per copy | price / copies |
 | volume | sales per day, once the 10% best and 10% worst days are dropped |
 | farm | hours to farm what makes the offer, see below |
-| platinum per hour | price / farm |
+| farm rate | copies farmed per hour: copies / farm |
+| platinum per hour | price / farm, shown on the page |
 
-Each ranking scores an offer out of 100: the geometric mean of the percentile
-ranks of its criteria, among the offers where every criterion is known.
+A score is 100 x the geometric mean of the percentile ranks of its criteria,
+among the offers where every criterion is known. Farm is an optional criterion,
+so every offer gets two scores:
 
-| Ranking | Criteria |
-| --- | --- |
-| Best to farm (platinum per hour), the default | platinum per hour, volume |
-| Best to sell (farm ignored) | price per copy, volume |
+| Score | Criteria | On the page |
+| --- | --- | --- |
+| `farm` | price per copy, volume, farm rate | "Count farm time in the score" ticked |
+| `market` | price per copy, volume | unticked |
 
-The rankings live in the `RANKINGS` table of `src/analytics/Scorer.hpp`; the page
-lists whatever is there.
+An offer that cannot be farmed has no `farm` score: the page lists it last. The
+scores live in the `RANKINGS` table of `src/analytics/Scorer.hpp`.
 
 A few absurd trades cannot move a median, and an offer that sold on less than
 10 days out of 90 ends with a volume of 0, so a score of 0.
