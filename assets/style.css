@@ -102,6 +102,13 @@ img {
     object-fit: contain;
 }
 
+img.platinum {
+    display: inline;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.15em;
+}
+
 .variant {
     display: block;
     font-size: 0.85rem;

@@ -1,4 +1,5 @@
-const { analytics, market, assets } = document.querySelector("main").dataset;
+const { analytics, market, assets, platinum } =
+  document.querySelector("main").dataset;
 
 const TOP = 10;
 const LIMIT = 10 ** 1000;
@@ -29,8 +30,8 @@ const COLUMNS = [
     title: "Price",
     className: "number",
     cell: (offer) => [
-      `${offer.price} p`,
-      element("span", { className: "variant", textContent: perCopy(offer) }),
+      ...plat(offer.price),
+      element("span", { className: "variant" }, perCopy(offer)),
     ],
   },
   { title: "Sold / day", className: "number", cell: (offer) => offer.volume },
@@ -52,9 +53,19 @@ function element(tag, properties = {}, children = []) {
   return node;
 }
 
+// amount followed by the platinum icon
+function plat(amount) {
+  return [
+    `${amount} `,
+    element("img", { src: platinum, className: "platinum", alt: "p" }),
+  ];
+}
+
 // price of one rank 0 copy, for offers that need several (arcanes)
 function perCopy({ price, copies = 1 }) {
-  return copies > 1 ? `${(price / copies).toFixed(1)} p × ${copies}` : "";
+  return copies > 1
+    ? [...plat((price / copies).toFixed(1)), ` × ${copies}`]
+    : [];
 }
 
 function grade(score) {
