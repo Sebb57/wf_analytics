@@ -61,7 +61,7 @@ a {
     color: inherit;
 }
 
-input {
+input[type="search"] {
     width: 100%;
     box-sizing: border-box;
     padding: 0.5rem 0.6rem;
@@ -75,6 +75,7 @@ input {
 #controls {
     display: flex;
     flex-wrap: wrap;
+    align-items: flex-end;
     gap: 0.75rem 1.5rem;
 }
 
@@ -84,6 +85,20 @@ label {
     gap: 0.25rem;
     font-size: 0.85rem;
     color: var(--muted);
+}
+
+label.toggle {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4rem;
+    padding-bottom: 0.5rem;
+    font-size: 1rem;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.no-farm .farm {
+    display: none;
 }
 
 select {

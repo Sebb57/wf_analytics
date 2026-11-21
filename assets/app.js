@@ -58,7 +58,7 @@ const COLUMNS = [
   { title: "Sold / day", className: "number", cell: (offer) => offer.volume },
   {
     title: "Farm",
-    className: "number",
+    className: "number farm",
     cell: (offer) =>
       offer.farm === undefined
         ? "–"
@@ -74,10 +74,12 @@ const COLUMNS = [
     title: "Score",
     className: "number score",
     cell: (offer) =>
-      element("span", {
-        className: grade(offer.score),
-        textContent: offer.score,
-      }),
+      offer.score === undefined
+        ? "–"
+        : element("span", {
+            className: grade(offer.score),
+            textContent: offer.score,
+          }),
   },
 ];
 
@@ -164,40 +166,41 @@ function search(offers, query) {
     `${found.length} offers, showing the best ${Math.min(found.length, LIMIT)}`;
 }
 
-// offers in the chosen ranking that pass the farm filter, best first
+// offers that pass the farm filter, best first, those without a score last
 function ranked(offers) {
-  const ranking = document.querySelector("#ranking").value;
-  const [, keep] = FARM_FILTERS[document.querySelector("#farm").value];
+  const ranking = document.querySelector("#rank-farm").checked
+    ? "farm"
+    : "market";
+  const [, keep] = FARM_FILTERS[document.querySelector("#farm-filter").value];
 
   return offers
-    .filter((offer) => offer.scores[ranking] !== undefined && keep(offer))
-    .sort((a, b) => b.scores[ranking] - a.scores[ranking])
-    .map((offer, index) =>
-      Object.assign(offer, { rank: index + 1, score: offer.scores[ranking] }),
-    );
+    .filter(keep)
+    .map((offer) => Object.assign(offer, { score: offer.scores[ranking] }))
+    .sort((a, b) => (b.score ?? -1) - (a.score ?? -1))
+    .map((offer, index) => Object.assign(offer, { rank: index + 1 }));
 }
 
 function render(offers) {
   const list = ranked(offers);
 
+  document
+    .querySelector("main")
+    .classList.toggle("no-farm", !document.querySelector("#show-farm").checked);
   fill(document.querySelector("#top"), list.slice(0, TOP));
   search(list, document.querySelector("#search").value);
 }
 
-function show({ updated, rankings, offers }) {
+function show({ updated, offers }) {
   options(
-    document.querySelector("#ranking"),
-    rankings.map(({ id, label }) => [id, label]),
-  );
-  options(
-    document.querySelector("#farm"),
+    document.querySelector("#farm-filter"),
     Object.entries(FARM_FILTERS).map(([id, [label]]) => [id, label]),
   );
   offers.forEach((offer) => {
+    offer.scores ??= { market: offer.score };
     offer.text = `${offer.name} ${offer.variant}`.toLowerCase();
   });
   document
-    .querySelectorAll("select, #search")
+    .querySelectorAll("input, select")
     .forEach((control) =>
       control.addEventListener("input", () => render(offers)),
     );
