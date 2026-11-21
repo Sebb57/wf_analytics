@@ -62,6 +62,9 @@ inline constexpr std::string_view RIVEN_ATTRIBUTES = "riven/attributes";
 inline constexpr std::string_view OLD_ITEM = "items/";              // items/<slug>
 inline constexpr std::string_view OLD_STATISTICS = "/statistics";   // items/<slug>/statistics
 
+// drop tables, a json copy of the official ones (https://www.warframe.com/droptables)
+inline constexpr std::string_view DROPS_URL = "https://drops.warframestat.us/data/all.slim.json";
+
 // analysis
 inline constexpr std::string_view PERIOD = "90days";
 inline constexpr std::size_t PERIOD_DAYS = 90;
