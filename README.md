@@ -42,4 +42,8 @@ live in the `COSTS` table of `src/analytics/Analyzer.hpp`, by item tag.
 ## Page
 
 `index.html` is served by GitHub Pages (Jekyll) and reads `analytics.json` at the
-root of the repository. To publish new numbers, run the scraper and push the file.
+root of the repository.
+
+The `Daily analysis` workflow reruns the scraper every night at midnight (Paris)
+and commits `analytics.json` when it changed. It can also be started by hand from
+the Actions tab.
