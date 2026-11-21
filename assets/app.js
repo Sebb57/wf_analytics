@@ -22,7 +22,12 @@ const COLUMNS = [
   {
     title: "Item",
     cell: (offer) => [
-      element("a", { href: market + offer.slug, textContent: offer.name }),
+      element("a", {
+        href: market + offer.slug,
+        target: "_blank",
+        rel: "noopener",
+        textContent: offer.name,
+      }),
       element("span", { className: "variant", textContent: offer.variant }),
     ],
   },
