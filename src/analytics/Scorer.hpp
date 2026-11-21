@@ -10,7 +10,6 @@
 
 #include "analytics/Offer.hpp"
 #include "constants.hpp"
-#include "json/Json.hpp"
 #include "utils/Math.hpp"
 #include <algorithm>
 #include <cmath>
@@ -32,14 +31,14 @@ class Scorer {
     private:
         struct Ranking {
             std::string_view id;
-            std::string_view label;
             std::vector<Criterion> criteria;
         };
 
+        // farm speed is optional: the farm ranking is the market one plus it
         // the first one is the default ranking
         static inline const std::vector<Ranking> RANKINGS{
-            {"farm", "Best to farm (platinum per hour)", {criterion<&Offer::platPerHour>, criterion<&Offer::volume>}},
-            {"market", "Best to sell (farm ignored)", {criterion<&Offer::unitPrice>, criterion<&Offer::volume>}},
+            {"farm", {criterion<&Offer::unitPrice>, criterion<&Offer::volume>, criterion<&Offer::farmRate>}},
+            {"market", {criterion<&Offer::unitPrice>, criterion<&Offer::volume>}},
         };
 
         [[nodiscard]] std::vector<double> _sorted(const std::vector<Offer*>& offers, Criterion criterion) const
@@ -83,15 +82,6 @@ class Scorer {
             for (const Ranking& ranking : this->RANKINGS)
                 this->_rank(offers, ranking);
             std::ranges::sort(offers, std::greater{}, [&](const Offer& offer) { return offer.scores.contains(first) ? offer.scores.at(first) : -1.0; });
-        }
-        // the rankings, for the page to offer them
-        [[nodiscard]] json::Json toJson() const
-        {
-            json::Json rankings = json::Json::array();
-
-            for (const Ranking& ranking : this->RANKINGS)
-                rankings.push(json::Json().set("id", std::string(ranking.id)).set("label", std::string(ranking.label)));
-            return rankings;
         }
 };
 

@@ -28,6 +28,7 @@ struct Offer {
     double unitPrice = 0.0;     // price of one of those copies
     std::optional<double> farmHours;     // to farm what makes one, nothing if it does not drop
     std::optional<double> platPerHour;   // price earned per hour of farm
+    std::optional<double> farmRate;      // rank 0 copies farmed per hour
     std::map<std::string, double> scores{};     // ranking -> score out of 100
 
     [[nodiscard]] json::Json toJson() const

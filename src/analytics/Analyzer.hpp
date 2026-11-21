@@ -132,6 +132,7 @@ class Analyzer {
                     .unitPrice = price / copies,
                     .farmHours = hours,
                     .platPerHour = hours ? std::optional<double>(price / *hours) : std::nullopt,
+                    .farmRate = hours ? std::optional<double>(copies / *hours) : std::nullopt,
                 });
             }
             return offers;
