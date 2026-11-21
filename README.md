@@ -3,8 +3,10 @@
 Finds what sells best on [warframe.market](https://warframe.market).
 
 The scraper goes through every item and each of its variants (mod rank, fish size,
-relic refinement, ayatan stars), reads 90 days of sales and gives every offer a
-score out of 100. A small GitHub page shows the top 10 and lets you search the rest.
+relic refinement, ayatan stars), reads 90 days of sales, estimates how long it
+takes to farm, and gives every offer a score out of 100 in each ranking. A small
+GitHub page shows the top 10 and lets you pick the ranking, filter on farm time
+and search the rest.
 
 ## Build
 
@@ -19,8 +21,9 @@ cmake --build build
 ./warframe_analytics > analytics.json
 ```
 
-It sends one request per item, 2 per second at most, so a full run takes about
-35 minutes. Progress and errors go to stderr.
+It downloads the drop tables once, then sends one request per item and one more
+per set, 2 per second at most, so a full run takes about 35 minutes. Progress and
+errors go to stderr.
 
 ## Score
 
@@ -30,7 +33,19 @@ It sends one request per item, 2 per second at most, so a full run takes about
 | copies | rank 0 copies used to make the offer: `(r + 1)(r + 2) / 2` for an arcane of rank `r`, 1 otherwise |
 | price per copy | price / copies |
 | volume | sales per day, once the 10% best and 10% worst days are dropped |
-| score | 100 x geometric mean of the percentile ranks of price per copy and volume |
+| farm | hours to farm what makes the offer, see below |
+| platinum per hour | price / farm |
+
+Each ranking scores an offer out of 100: the geometric mean of the percentile
+ranks of its criteria, among the offers where every criterion is known.
+
+| Ranking | Criteria |
+| --- | --- |
+| Best to farm (platinum per hour), the default | platinum per hour, volume |
+| Best to sell (farm ignored) | price per copy, volume |
+
+The rankings live in the `RANKINGS` table of `src/analytics/Scorer.hpp`; the page
+lists whatever is there.
 
 A few absurd trades cannot move a median, and an offer that sold on less than
 10 days out of 90 ends with a volume of 0, so a score of 0.
@@ -38,6 +53,25 @@ A few absurd trades cannot move a median, and an offer that sold on less than
 A rank 5 arcane takes 21 rank 0 copies. Scoring on the price per copy shows when
 selling those 21 copies one by one pays more than ranking it up. The cost rules
 live in the `COSTS` table of `src/analytics/Analyzer.hpp`, by item tag.
+
+## Farm
+
+The drop chances come from the official drop tables
+([JSON copy](https://drops.warframestat.us/data/all.slim.json)). For every item
+the scraper takes its best source: minutes for one try / drop chance.
+
+- A try at a mission takes the time in the `MISSIONS` table of
+  `src/analytics/Farm.hpp`, an estimate per mission type. In endless missions the
+  rewards follow the A, A, B, C cycle, so a rotation C reward takes 4 times that.
+- A prime part comes from a relic: farm the relic, then open it (5 minutes).
+  Only relics that still drop count, so vaulted parts are not farmable.
+- A set is the sum of its parts, a ranked arcane is its copies times one.
+- Only the form that drops gets a farm time: rank 0 mods, intact relics. Ranked
+  mods and refined relics have none, nor do items bought from syndicates or
+  vendors (Baro, Conclave, Simaris...).
+
+These are orders of magnitude for one player alone: squads, refined relics,
+boosters and the other rewards of the same mission are not counted.
 
 ## Page
 
