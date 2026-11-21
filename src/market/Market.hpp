@@ -8,54 +8,29 @@
 #ifndef MARKET_HPP_
     #define MARKET_HPP_
 
+#include "api/AJsonApi.hpp"
 #include "constants.hpp"
-#include "curl/ACurl.hpp"
 #include "json/Json.hpp"
-#include "utils/RateLimiter.hpp"
 #include <format>
-#include <string>
 #include <string_view>
 
 namespace wf::market {
 
-class Market : public curl::ACurl {
-    private:
-        utils::RateLimiter _limiter{constants::REQUESTS_PER_SECOND};
-
-        [[nodiscard]] json::Json _fetch(std::string_view url)
-        {
-            this->_limiter.wait();
-            this->curl(url);
-
-            const long status = this->getStatusCode();
-
-            if (status < 200 || status >= 300)
-                throw MarketException(std::string(url) + " answered HTTP " + std::to_string(status));
-            return json::Json::parse(this->getResponse());
-        }
-
+class Market : public api::AJsonApi {
     public:
-        Market(std::string_view language = constants::DEFAULT_LANGUAGE)
+        Market(std::string_view language = constants::DEFAULT_LANGUAGE) : AJsonApi(constants::REQUESTS_PER_SECOND)
         {
-            this->setOpt(CURLOPT_USERAGENT, constants::USER_AGENT);
-            this->setHeader("Accept", "application/json");
             this->setHeader("Language", language);
         }
 
         [[nodiscard]] json::Json getItems()
         {
-            return this->_fetch(constants::concat<constants::PRODUCTION_URL, constants::ITEMS>).at("data");
+            return this->fetch(constants::concat<constants::PRODUCTION_URL, constants::ITEMS>).at("data");
         }
         [[nodiscard]] json::Json getStatistics(std::string_view slug)
         {
-            return this->_fetch(std::format("{}{}{}{}", constants::OLD_URL, constants::OLD_ITEM, this->escape(slug), constants::OLD_STATISTICS)).at("payload");
+            return this->fetch(std::format("{}{}{}{}", constants::OLD_URL, constants::OLD_ITEM, this->escape(slug), constants::OLD_STATISTICS)).at("payload");
         }
-
-        // exceptions
-        class MarketException : public CurlException {
-            public:
-                explicit MarketException(const std::string& msg) : CurlException(msg) {}
-        };
 };
 
 }
