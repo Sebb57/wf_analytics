@@ -31,6 +31,11 @@ class Market : public api::AJsonApi {
         {
             return this->fetch(std::format("{}{}{}{}", constants::OLD_URL, constants::OLD_ITEM, this->escape(slug), constants::OLD_STATISTICS)).at("payload");
         }
+        // the set itself (setRoot) and each of its parts (quantityInSet)
+        [[nodiscard]] json::Json getSet(std::string_view slug)
+        {
+            return this->fetch(std::format("{}{}{}{}", constants::PRODUCTION_URL, constants::ITEM, this->escape(slug), constants::ITEM_SET)).at("data").at("items");
+        }
 };
 
 }

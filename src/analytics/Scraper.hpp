@@ -9,9 +9,11 @@
     #define SCRAPER_HPP_
 
 #include "analytics/Analyzer.hpp"
+#include "analytics/Farm.hpp"
 #include "analytics/Item.hpp"
 #include "analytics/Offer.hpp"
 #include "analytics/Scorer.hpp"
+#include "drops/Drops.hpp"
 #include "json/Json.hpp"
 #include "market/Market.hpp"
 #include <chrono>
@@ -26,13 +28,28 @@ namespace wf::analytics {
 class Scraper {
     private:
         market::Market _market;
+        Farm _farm{drops::Drops().getDrops()};
         Analyzer _analyzer;
         Scorer _scorer;
         std::vector<Offer> _offers;
 
+        // what has to be farmed to make the item: its parts for a set, itself otherwise
+        [[nodiscard]] std::vector<Farm::Part> _parts(const Item& item)
+        {
+            std::vector<Farm::Part> parts;
+
+            if (!item.hasTag("set"))
+                return {{item.name}};
+            for (const json::Json& part : this->_market.getSet(item.slug).elements()) {
+                if (!part.at("setRoot").get<bool>())
+                    parts.push_back({Item::fromJson(part).name, part.at("quantityInSet").get<double>()});
+            }
+            return parts;
+        }
         void _scrape(const Item& item)
         {
-            const std::vector<Offer> offers = this->_analyzer.analyze(item, this->_market.getStatistics(item.slug));
+            const std::optional<double> farmHours = this->_farm.hours(this->_parts(item));
+            const std::vector<Offer> offers = this->_analyzer.analyze(item, this->_market.getStatistics(item.slug), farmHours);
 
             this->_offers.insert(this->_offers.end(), offers.begin(), offers.end());
         }

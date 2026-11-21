@@ -10,7 +10,9 @@
 
 #include "constants.hpp"
 #include "json/Json.hpp"
+#include <algorithm>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace wf::analytics {
@@ -32,6 +34,8 @@ struct Item {
             item.at("tags").get<std::vector<std::string>>(),
         };
     }
+
+    [[nodiscard]] bool hasTag(std::string_view tag) const { return std::ranges::find(this->tags, tag) != this->tags.end(); }
 };
 
 }
