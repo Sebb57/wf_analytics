@@ -4,6 +4,22 @@ const { analytics, market, assets, platinum } =
 const TOP = 10;
 const LIMIT = 10 ** 1000;
 
+// farm filter -> label, and the offers it keeps
+const FARM_FILTERS = {
+  any: ["Any", () => true],
+  farmable: ["Farmable", (offer) => offer.farm !== undefined],
+  hour: ["Under 1 h", (offer) => offer.farm <= 1],
+  ten: ["Under 10 h", (offer) => offer.farm <= 10],
+  none: ["Not farmable", (offer) => offer.farm === undefined],
+};
+
+// hours in a unit -> unit, biggest first
+const DURATIONS = [
+  [24, "d"],
+  [1, "h"],
+  [1 / 60, "min"],
+];
+
 // minimum score -> css class
 const GRADES = [
   [70, "good"],
@@ -41,6 +57,20 @@ const COLUMNS = [
   },
   { title: "Sold / day", className: "number", cell: (offer) => offer.volume },
   {
+    title: "Farm",
+    className: "number",
+    cell: (offer) =>
+      offer.farm === undefined
+        ? "–"
+        : [
+            duration(offer.farm),
+            element("span", { className: "variant" }, [
+              ...plat(offer.perHour),
+              " / h",
+            ]),
+          ],
+  },
+  {
     title: "Score",
     className: "number score",
     cell: (offer) =>
@@ -73,6 +103,19 @@ function perCopy({ price, copies = 1 }) {
     : [];
 }
 
+// two significant digits
+function round(value) {
+  return Number(value.toPrecision(2));
+}
+
+// in the biggest unit that fits once rounded: 45 min, 2.5 h, 12 d
+function duration(hours) {
+  const [size, unit] =
+    DURATIONS.find(([size]) => round(hours / size) >= 1) ?? DURATIONS.at(-1);
+
+  return `${round(hours / size)} ${unit}`;
+}
+
 function grade(score) {
   return GRADES.find(([minimum]) => score >= minimum)[1];
 }
@@ -87,6 +130,14 @@ function row(tag, cell) {
         { className: column.className ?? "" },
         [cell(column)].flat(),
       ),
+    ),
+  );
+}
+
+function options(select, entries) {
+  select.replaceChildren(
+    ...entries.map(([value, textContent]) =>
+      element("option", { value, textContent }),
     ),
   );
 }
@@ -113,16 +164,44 @@ function search(offers, query) {
     `${found.length} offers, showing the best ${Math.min(found.length, LIMIT)}`;
 }
 
-function show({ updated, offers }) {
-  const input = document.querySelector("#search");
+// offers in the chosen ranking that pass the farm filter, best first
+function ranked(offers) {
+  const ranking = document.querySelector("#ranking").value;
+  const [, keep] = FARM_FILTERS[document.querySelector("#farm").value];
 
-  offers.forEach((offer, index) => {
-    offer.rank = index + 1;
+  return offers
+    .filter((offer) => offer.scores[ranking] !== undefined && keep(offer))
+    .sort((a, b) => b.scores[ranking] - a.scores[ranking])
+    .map((offer, index) =>
+      Object.assign(offer, { rank: index + 1, score: offer.scores[ranking] }),
+    );
+}
+
+function render(offers) {
+  const list = ranked(offers);
+
+  fill(document.querySelector("#top"), list.slice(0, TOP));
+  search(list, document.querySelector("#search").value);
+}
+
+function show({ updated, rankings, offers }) {
+  options(
+    document.querySelector("#ranking"),
+    rankings.map(({ id, label }) => [id, label]),
+  );
+  options(
+    document.querySelector("#farm"),
+    Object.entries(FARM_FILTERS).map(([id, [label]]) => [id, label]),
+  );
+  offers.forEach((offer) => {
     offer.text = `${offer.name} ${offer.variant}`.toLowerCase();
   });
-  fill(document.querySelector("#top"), offers.slice(0, TOP));
-  input.addEventListener("input", () => search(offers, input.value));
-  search(offers, input.value);
+  document
+    .querySelectorAll("select, #search")
+    .forEach((control) =>
+      control.addEventListener("input", () => render(offers)),
+    );
+  render(offers);
   document.querySelector("#updated").textContent =
     `Updated ${new Date(updated).toLocaleDateString()}.`;
 }
